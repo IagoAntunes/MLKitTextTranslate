@@ -27,8 +27,9 @@ class TranslateSettingsViewModel @Inject constructor(
 
     internal fun loadLanguages() {
         viewModelScope.launch {
-            delay(3000)
+            delay(500)
             _uiState.value = _uiState.value.copy(
+                allLanguageModels = textTranslator.getAllModels()
             )
             updateLanguagesState()
             loadDownloadedLanguages()
@@ -58,6 +59,21 @@ class TranslateSettingsViewModel @Inject constructor(
     }
 
     private fun loadDownloadedLanguages() {
+        textTranslator.getDownloadedModels(
+            onSuccess = { list ->
+                _uiState.value = _uiState.value.copy(
+                    downloadedLanguageModels = list
+                )
+                updateLanguagesState()
+            },
+            onFailure = {
+                if (_uiState.value.allLanguageModels.isEmpty()) {
+                    _uiState.value = _uiState.value.copy(
+                        loadModelsState = AppState.Error,
+                    )
+                }
+            }
+        )
     }
 
     fun showDownloadDialog(show: Boolean) {
@@ -93,9 +109,35 @@ class TranslateSettingsViewModel @Inject constructor(
             languageModel = languageModel,
             downloadState = DownloadState.DOWNLOADING
         )
+
+        textTranslator.downloadModel(
+            modelName = languageModel.id,
+            onSuccess = {
+                loadLanguages()
+            },
+            onFailure = {
+                updateDownloadState(
+                    languageModel = languageModel,
+                    downloadState = DownloadState.NOT_DOWNLOADED
+                )
+            }
+        )
     }
 
     fun removeLanguage(languageModel: LanguageModel) {
+
+        textTranslator.removeModel(
+            modelName = languageModel.id,
+            onSuccess = {
+                loadLanguages()
+            },
+            onFailure = {
+                updateDownloadState(
+                    languageModel = languageModel,
+                    downloadState = DownloadState.DOWNLOADED
+                )
+            }
+        )
     }
 
     fun cleanState() {

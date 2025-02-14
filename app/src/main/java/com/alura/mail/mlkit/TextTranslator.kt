@@ -1,11 +1,14 @@
 package com.alura.mail.mlkit
 
 import android.util.Log
+import com.alura.mail.model.DownloadState
 import com.alura.mail.model.Language
+import com.alura.mail.model.LanguageModel
 import com.alura.mail.util.FileUtil
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.common.model.RemoteModelManager
 import com.google.mlkit.nl.languageid.LanguageIdentification
+import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
@@ -35,6 +38,9 @@ class TextTranslator(private val fileUtil: FileUtil) {
             .addOnFailureListener {
                 Log.e("error", "error $it")
                 onFailure()
+            }
+            .addOnCompleteListener {
+                languageIdentifier.close()
             }
     }
 
@@ -99,10 +105,67 @@ class TextTranslator(private val fileUtil: FileUtil) {
                 onSuccess()
             }
             .addOnFailureListener {
+                Log.e("DOWNLOAD ERROR", it.message.toString())
                 onFailure()
             }
     }
 
+    fun removeModel(
+        modelName: String,
+        onSuccess: () -> Unit = {},
+        onFailure: () -> Unit = {}
+    ) {
+        val model = TranslateRemoteModel.Builder(modelName).build()
+        val modelManager = RemoteModelManager.getInstance()
+        modelManager.deleteDownloadedModel(model)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener {
+                onFailure()
+            }
+    }
+
+    fun getAllModels(): List<LanguageModel> {
+        return TranslateLanguage.getAllLanguages().map { model ->
+            LanguageModel(
+                id = model,
+                name = translatableLanguageModels[model] ?: "Unknown",
+                downloadState = DownloadState.NOT_DOWNLOADED,
+                size = fileUtil.getSizeModel(model)
+            )
+        }
+    }
+
+    fun getDownloadedModels(
+        onSuccess: (List<LanguageModel>) -> Unit = {},
+        onFailure: () -> Unit
+    ) {
+        val modelManager = RemoteModelManager.getInstance()
+
+        modelManager.getDownloadedModels(TranslateRemoteModel::class.java)
+            .addOnSuccessListener { models ->
+                val languageModels = mutableListOf<LanguageModel>()
+                models.forEach { model ->
+                    try {
+                        languageModels.add(
+                            LanguageModel(
+                                id = model.language,
+                                name = translatableLanguageModels[model.language] ?: model.language,
+                                downloadState = DownloadState.DOWNLOADED,
+                                size = fileUtil.getSizeModel(model.modelNameForBackend)
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Log.i("FileUtilSize", "error: ${e.message}")
+                    }
+                }
+                onSuccess(languageModels)
+            }
+            .addOnFailureListener {
+                onFailure()
+            }
+    }
 
 }
 
