@@ -53,7 +53,8 @@ android {
 }
 
 dependencies {
-
+    implementation("com.google.mlkit:entity-extraction:16.0.0-beta5")
+    implementation ("com.google.mlkit:smart-reply:17.0.2")
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)

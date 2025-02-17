@@ -13,6 +13,7 @@ import com.alura.mail.model.Suggestion
 import com.alura.mail.model.SuggestionAction
 import com.alura.mail.samples.EmailDao
 import com.alura.mail.ui.navigation.emailIdArgument
+import com.google.mlkit.nl.translate.TranslateLanguage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,6 +40,20 @@ class ContentEmailViewModel @Inject constructor(
     }
 
     private fun loadSmartActions() {
+        _uiState.value.selectedEmail?.let { email ->
+            entityExtraction.extractSuggestions(
+                text = email.content,
+                onSuccess = { entities, ranges ->
+                    Log.i("loadSmartActions", "Success $entities")
+                    _uiState.value = _uiState.value.copy(
+                        suggestions = _uiState.value.suggestions + entityExtraction.entityToSuggestionAction(
+                            entities
+                        ),
+                        rangeList = ranges,
+                    )
+                }
+            )
+        }
     }
 
     private fun loadSmartSuggestions() {
@@ -59,6 +74,37 @@ class ContentEmailViewModel @Inject constructor(
                 )
             }
 
+
+            textTranslator.messageListTranslate(
+                messageList = conversation,
+                onSuccess = { translatedConversation ->
+                    responseGenerator.generateResponse(
+                        listMessages = translatedConversation,
+                        onSuccess = { smartReplies ->
+                            textTranslator.listTranslate(
+                                list = smartReplies,
+                                sourceLanguage = TranslateLanguage.ENGLISH,
+                                targetLanguage = TranslateLanguage.PORTUGUESE,
+                                onSuccess = { translatedSmartReplies ->
+                                    _uiState.value = _uiState.value.copy(
+                                        suggestions = responseGenerator.messageToSuggestionAction(
+                                            translatedSmartReplies
+                                        )
+                                    )
+                                    loadSmartActions()
+                                }
+                            )
+
+                        },
+                        onError = {
+                            Log.e("loadSmartSuggestions", "Error $it")
+                            loadSmartActions()
+                        }
+                    )
+                },
+                sourceLanguage = _uiState.value.languageIdentified?.code.toString(),
+            )
+
         }
     }
 
@@ -70,8 +116,6 @@ class ContentEmailViewModel @Inject constructor(
                 originalContent = email?.content,
                 originalSubject = email?.subject
             )
-            loadSmartActions()
-            loadSmartSuggestions()
 
             identifyEmailLanguage()
             identifyLocalLanguage()
@@ -87,7 +131,12 @@ class ContentEmailViewModel @Inject constructor(
                         languageIdentified = language
                     )
                     verifyIfNeedTranslate()
+                    loadSmartSuggestions()
                 },
+                onFailure = {
+                    Log.e("identifyEmailLanguage", "Error")
+                    loadSmartSuggestions()
+                }
             )
         }
     }
