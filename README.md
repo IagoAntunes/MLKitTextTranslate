@@ -1,4 +1,5 @@
-![Mobile-Android com IA](https://github.com/git-jr/3521-Android-MLKit-Idiomas/assets/35709152/3b87166c-9434-4943-bd5b-4cfefec4cf74)
+![Mobile-Android-com-IA-3522](https://github.com/git-jr/3522-Android-MLKit-Smart-Suggestions/assets/35709152/5d4274e3-1b77-4fdc-82c1-cb6f4547d2f4)
+
 
 ![](https://img.shields.io/github/license/alura-cursos/android-com-kotlin-personalizando-ui)
 
@@ -13,16 +14,19 @@ O projeto base conta com 3 telas principais:
 - Conteúdo de e-mail: Ao clicar em um item da lista inicial a tela com conteúdo do corpo e assunto do mesmo aparece.
 - Ajustes: Nesse primeiro momento contém apenas o texto informando que não há nada ali.
   
-https://github.com/git-jr/3521-Android-MLKit-Idiomas/assets/35709152/9de3f1c9-24f9-4492-851b-eec06ce91f4a
+  https://github.com/git-jr/3522-Android-MLKit-Smart-Suggestions/assets/35709152/ae84914b-ad06-4803-aafa-88876b3178cb
 
 
 
 Ao final do curso, nosso projeto será capaz de:
-- Identificar o idioma de cada e-mail através do processamento local e off-line.
-- Oferecer a possibilidade de tradução de mais de 50 idiomas, possibilitando acesso a potencialmente bilhões de usuários. 
-- Permitir o gerenciamento dos modelos de idioma do ML Kit, possibilitando download antecipado e exclusão por parte do usuário do App quando necessário.
+- Realizar analise em tempo real de e-mails recebidos e gerar sugestões de respostas, de texto e de emoji.
+- Analisar o conteúdo de um e-mail, indentificar quais entidades estão presentes e destacá-las com auxílio do Jetpack Compose.
+- Usar as entidades identificadas para gerar sugestões de ações, como abrir um mapa, ligar para um telefone, enviar um e-mail, etc.
 
-https://github.com/git-jr/3521-Android-MLKit-Idiomas/assets/35709152/df6a30d7-2353-437e-b04b-1fd996a14186
+https://github.com/git-jr/3522-Android-MLKit-Smart-Suggestions/assets/35709152/adf85d9a-d052-40ca-b095-acb2dbdca31d
+
+
+
 
 
 
@@ -41,6 +45,8 @@ As técnicas e tecnologias utilizadas pra isso são:
 - `Kotlin Datetime`: navegação entre composables e telas.  
 - `ML Kit identification `: biblioteca para análise e identificação de idiomas, parte do conjunto de ferramentas de aprendizado de máquina da Google
 - `ML Kit translation `: biblioteca para análise e tradução de idiomas, parte do conjunto de ferramentas de aprendizado de máquina da Google
+- `ML Kit Smart Reply `: biblioteca para análise de texto e sugestão de respostas, parte do conjunto de ferramentas de aprendizado de máquina da Google
+- `ML Kit Entity Extraction `: biblioteca para análise de texto e extração de entidades, parte do conjunto de ferramentas de aprendizado de máquina da Google
 
 
 
@@ -59,8 +65,10 @@ Após baixar o projeto, você pode abri-lo com o Android Studio. Para isso, na t
 
 Gostou do projeto e quer conhecer mais? Você pode [acessar o curso](https://www.alura.com.br/curso-online-android-ia-google-ml-kit-traducao-textos) que desenvolve o projeto desde o começo!
 
-[codigo-inicial]: https://github.com/alura-cursos/3521-Android-MLKit-Translations
-[download-inicial]: https://github.com/alura-cursos/3521-Android-MLKit-Translations/archive/refs/heads/projeto-base.zip
+[codigo-inicial]: https://github.com/alura-cursos/3522-Android-MLKit-Smart-Suggestions
+[download-inicial]: https://github.com/alura-cursos/3522-Android-MLKit-Smart-Suggestions/archive/refs/heads/projeto-base.zip
 
-[codigo-final]: https://github.com/alura-cursos/3521-Android-MLKit-Translations/tree/aula05
-[download-final]: https://github.com/alura-cursos/3521-Android-MLKit-Translations/archive/refs/heads/aula05.zip
+[codigo-final]: https://github.com/alura-cursos/3522-Android-MLKit-Smart-Suggestions/tree/aula05
+[download-final]: https://github.com/alura-cursos/3522-Android-MLKit-Smart-Suggestions/archive/refs/heads/aula05.zip
+
+

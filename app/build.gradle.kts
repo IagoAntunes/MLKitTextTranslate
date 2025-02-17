@@ -43,7 +43,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
+        kotlinCompilerExtensionVersion = "1.5.4"
     }
     packaging {
         resources {
@@ -53,8 +53,7 @@ android {
 }
 
 dependencies {
-    implementation ("com.google.mlkit:language-id:17.0.4")
-    implementation ("com.google.mlkit:translate:17.0.3")
+
     implementation(libs.core.ktx)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.activity.compose)
@@ -80,5 +79,8 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     ksp (libs.dagger.compiler)
     ksp (libs.hilt.compiler)
-    
+
+    implementation (libs.language.id)
+    implementation (libs.translate)
+
 }

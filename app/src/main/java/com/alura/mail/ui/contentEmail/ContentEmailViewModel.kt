@@ -4,8 +4,13 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.alura.mail.mlkit.EntityExtractor
+import com.alura.mail.mlkit.ResponseGenerator
 import com.alura.mail.mlkit.TextTranslator
 import com.alura.mail.model.Language
+import com.alura.mail.model.Message
+import com.alura.mail.model.Suggestion
+import com.alura.mail.model.SuggestionAction
 import com.alura.mail.samples.EmailDao
 import com.alura.mail.ui.navigation.emailIdArgument
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ContentEmailViewModel @Inject constructor(
     private val textTranslator: TextTranslator,
+    private val responseGenerator: ResponseGenerator,
+    private val entityExtraction: EntityExtractor,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val emailDao = EmailDao()
@@ -31,6 +38,30 @@ class ContentEmailViewModel @Inject constructor(
         loadEmail()
     }
 
+    private fun loadSmartActions() {
+    }
+
+    private fun loadSmartSuggestions() {
+        _uiState.value.selectedEmail?.let { email ->
+            val conversation = mutableListOf(
+                Message(
+                    content = email.content,
+                    isLocalUser = false
+                )
+            )
+
+            email.replies.forEach { reply ->
+                conversation.add(
+                    Message(
+                        content = reply.content,
+                        isLocalUser = email.user.name != reply.user.name
+                    )
+                )
+            }
+
+        }
+    }
+
     private fun loadEmail() {
         viewModelScope.launch {
             val email = emailDao.getEmailById(emailId)
@@ -39,6 +70,9 @@ class ContentEmailViewModel @Inject constructor(
                 originalContent = email?.content,
                 originalSubject = email?.subject
             )
+            loadSmartActions()
+            loadSmartSuggestions()
+
             identifyEmailLanguage()
             identifyLocalLanguage()
         }
@@ -47,10 +81,10 @@ class ContentEmailViewModel @Inject constructor(
     private fun identifyEmailLanguage() {
         _uiState.value.selectedEmail?.let { email ->
             textTranslator.languageIdentifier(
-                email.content,
+                text = email.content,
                 onSuccess = { language ->
                     _uiState.value = _uiState.value.copy(
-                        languageIdentified = language,
+                        languageIdentified = language
                     )
                     verifyIfNeedTranslate()
                 },
@@ -73,14 +107,16 @@ class ContentEmailViewModel @Inject constructor(
     }
 
     private fun downloadDefaultLanguageModel() {
+
         val defaultLanguage = _uiState.value.localLanguage?.code.toString()
+
         textTranslator.downloadModel(
-            defaultLanguage,
+            modelName = defaultLanguage,
             onSuccess = {
-                Log.i("downloadDefaultLanguage", "Success")
+                Log.i("defaultLanguage", "Modelo default baixado com sucesso")
             },
             onFailure = {
-                Log.i("downloadDefaultLanguage", "Failure")
+                Log.e("defaultLanguage", "Modelo default não baixado")
             }
         )
     }
@@ -112,6 +148,7 @@ class ContentEmailViewModel @Inject constructor(
                 }
             } else {
                 val languageIdentified = _uiState.value.languageIdentified?.code.toString()
+
                 textTranslator.verifyDownloadModel(
                     modelCode = languageIdentified,
                     onSuccess = {
@@ -154,11 +191,7 @@ class ContentEmailViewModel @Inject constructor(
                             },
                             onFailure = {
                                 _uiState.value = _uiState.value.copy(
-                                    translatedState = TranslatedState.NOT_TRANSLATED,
-                                    selectedEmail = email.copy(
-                                        content = originalContent.toString(),
-                                        subject = originalSubject.toString(),
-                                    )
+                                    translatedState = TranslatedState.NOT_TRANSLATED
                                 )
                             }
                         )
@@ -179,19 +212,12 @@ class ContentEmailViewModel @Inject constructor(
                             targetLanguage = localLanguage.code,
                             onSuccess = {
                                 _uiState.value = _uiState.value.copy(
-                                    selectedEmail = email.copy(subject = it),
-                                    translatedState = TranslatedState.TRANSLATED
+                                    selectedEmail = email.copy(subject = it)
                                 )
-
-                                translateSubject()
                             },
                             onFailure = {
                                 _uiState.value = _uiState.value.copy(
-                                    translatedState = TranslatedState.NOT_TRANSLATED,
-                                    selectedEmail = email.copy(
-                                        content = originalContent.toString(),
-                                        subject = originalSubject.toString()
-                                    )
+                                    translatedState = TranslatedState.NOT_TRANSLATED
                                 )
                             }
                         )
@@ -205,19 +231,19 @@ class ContentEmailViewModel @Inject constructor(
         val languageIdentified = _uiState.value.languageIdentified?.code ?: return
 
         textTranslator.downloadModel(
-            languageIdentified,
+            modelName = languageIdentified,
             onSuccess = {
-                Log.i("downloadLanguageModel", "Success")
                 translateEmail()
-
+                Log.i("downloadLanguageModel", "Modelo baixado com sucesso")
             },
             onFailure = {
-                Log.i("downloadLanguageModel", "Failure")
                 _uiState.value = _uiState.value.copy(
-                    translatedState = TranslatedState.NOT_TRANSLATED,
+                    translatedState = TranslatedState.NOT_TRANSLATED
                 )
+                Log.e("downloadLanguageModel", "Modelo não baixado")
             }
         )
+
     }
 
     fun showDownloadLanguageDialog(show: Boolean) {
@@ -230,5 +256,25 @@ class ContentEmailViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(
             showTranslateButton = false
         )
+    }
+
+    fun setSelectSuggestion(suggestion: Suggestion) {
+        _uiState.value = _uiState.value.copy(
+            selectedSuggestion = suggestion
+        )
+    }
+
+    fun addReply(text: String) {
+        _uiState.value.selectedEmail?.let { email ->
+            _uiState.value = _uiState.value.copy(
+                selectedEmail = email.copy(
+                    replies = email.replies + EmailDao().mountLocalEmail(text)
+                )
+            )
+        }
+
+        if (_uiState.value.suggestions.first().action == SuggestionAction.SMART_REPLY) {
+            loadSmartSuggestions()
+        }
     }
 }

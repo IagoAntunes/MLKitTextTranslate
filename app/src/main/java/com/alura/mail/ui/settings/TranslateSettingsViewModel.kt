@@ -60,16 +60,16 @@ class TranslateSettingsViewModel @Inject constructor(
 
     private fun loadDownloadedLanguages() {
         textTranslator.getDownloadedModels(
-            onSuccess = { list ->
+            onSuccess = {
                 _uiState.value = _uiState.value.copy(
-                    downloadedLanguageModels = list
+                    downloadedLanguageModels = it
                 )
                 updateLanguagesState()
             },
             onFailure = {
                 if (_uiState.value.allLanguageModels.isEmpty()) {
                     _uiState.value = _uiState.value.copy(
-                        loadModelsState = AppState.Error,
+                        loadModelsState = AppState.Error
                     )
                 }
             }
@@ -125,7 +125,6 @@ class TranslateSettingsViewModel @Inject constructor(
     }
 
     fun removeLanguage(languageModel: LanguageModel) {
-
         textTranslator.removeModel(
             modelName = languageModel.id,
             onSuccess = {
