@@ -12,7 +12,6 @@ The base project has 3 main screens:
   
   https://github.com/git-jr/3522-Android-MLKit-Smart-Suggestions/assets/35709152/ae84914b-ad06-4803-aafa-88876b3178cb
 
-At the end of the course, our project will be able to:
 - Perform real-time analysis of received emails and generate suggested responses, text and emoji.
 - Analyze the content of an email, identify which entities are present and highlight them with the help of Jetpack Compose.
 - Use the identified entities to generate suggestions for actions, such as opening a map, calling a phone, sending an email, etc.
